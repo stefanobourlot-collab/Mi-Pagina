@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stefano - Mi Espacio Personal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* MENU LATERAL */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 30px 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            left: 0;
+            top: 0;
+        }
+
+        .perfil {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .perfil h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .perfil p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .menu {
+            list-style: none;
+        }
+
+        .menu li {
+            margin-bottom: 15px;
+        }
+
+        .menu a {
+            display: block;
+            padding: 12px 20px;
+            background: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .menu a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .seccion {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .seccion.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .seccion h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 28px;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .clima-info, .dolar-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .clima-item, .dolar-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .galeria {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .foto-card {
+            background: #f9f9f9;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .foto-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .foto-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .foto-card p {
+            padding: 15px;
+            text-align: center;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .juego-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .numero-juego {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .juego-input {
+            padding: 10px;
+            font-size: 18px;
+            margin: 10px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .mensaje-juego {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- MENÚ LATERAL -->
+        <div class="sidebar">
+            <div class="perfil">
+                <h2>✨ Stefano ✨</h2>
+                <p>Bienvenido a mi espacio</p>
+            </div>
+            <ul class="menu">
+                <li><a onclick="mostrarSeccion('inicio')">🏠 Inicio / Clima</a></li>
+                <li><a onclick="mostrarSeccion('fotos-viaje')">📸 Fotos Viaje</a></li>
+                <li><a onclick="mostrarSeccion('fotos-gata')">🐱 Fotos de mi Gata</a></li>
+                <li><a onclick="mostrarSeccion('finanzas')">💰 Finanzas - Dólar</a></li>
+                <li><a onclick="mostrarSeccion('juegos')">🎮 Juegos</a></li>
+            </ul>
+        </div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-content">
+            <!-- Sección Inicio con Clima -->
+            <div id="inicio" class="seccion active">
+                <h2>🌤️ Hola, soy Stefano. Este es mi perfil de GitHub</h2>
+                <div class="info-card">
+                    <h3>📍 Datos del Tiempo - Buenos Aires</h3>
+                    <div class="clima-info" id="clima-data">
+                        <div class="clima-item">
+                            <h4>Temperatura</h4>
+                            <p id="temp">Cargando...</p>
+                        </div>
+                        <div class="clima-item">
+                            <h4>Clima</h4>
+                            <p id="clima-desc">Cargando...</p>
+                        </div>
+                        <div class="clima-item">
+                            <h4>Humedad</h4>
+                            <p id="humedad">Cargando...</p>
+                        </div>
+                        <div class="clima-item">
+                            <h4>Viento</h4>
+                            <p id="viento">Cargando...</p>
+                        </div>
+                    </div>
+                </div>
+                <p style="margin-top: 20px;">¡Hola! Soy Stefano. Esta es mi página personal donde comparto mis fotos de viajes, las fotos de mi gata, veo el clima, las cotizaciones del dólar y me divierto con juegos. ¡Explora el menú de la izquierda!</p>
+            </div>
+
+            <!-- Sección Fotos de Viaje -->
+            <div id="fotos-viaje" class="seccion">
+                <h2>📸 Mis Aventuras de Viaje</h2>
+                <div class="galeria" id="galeria-viajes">
+                    <!-- Las fotos se cargan automáticamente -->
+                </div>
+            </div>
+
+            <!-- Sección Fotos de mi Gata -->
+            <div id="fotos-gata" class="seccion">
+                <h2>🐱 Mi Gata - Milu</h2>
+                <div class="galeria" id="galeria-gata">
+                    <!-- Las fotos se cargan automáticamente -->
+                </div>
+            </div>
+
+            <!-- Sección Finanzas -->
+            <div id="finanzas" class="seccion">
+                <h2>💰 Cotizaciones en Tiempo Real</h2>
+                <div class="info-card">
+                    <h3>💵 Dólar Blue Argentina</h3>
+                    <div class="dolar-info" id="dolar-data">
+                        <div class="dolar-item">
+                            <h4>Compra</h4>
+                            <p id="dolar-compra">Cargando...</p>
+                        </div>
+                        <div class="dolar-item">
+                            <h4>Venta</h4>
+                            <p id="dolar-venta">Cargando...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <h3>📈 Índices Internacionales</h3>
+                    <div class="dolar-info" id="indices-data">
+                        <div class="dolar-item">
+                            <h4>S&P 500</h4>
+                            <p id="sp500">Cargando...</p>
+                        </div>
+                        <div class="dolar-item">
+                            <h4>Nasdaq</h4>
+                            <p id="nasdaq">Cargando...</p>
+                        </div>
+                        <div class="dolar-item">
+                            <h4>Dow Jones</h4>
+                            <p id="dowjones">Cargando...</p>
+                        </div>
+                    </div>
+                </div>
+                <p style="font-size: 12px; color: #999; text-align: center;">📌 Datos actualizados cada 30 segundos</p>
+            </div>
+
+            <!-- Sección Juegos -->
+            <div id="juegos" class="seccion">
+                <h2>🎮 Adivina el Número</h2>
+                <div class="juego-container">
+                    <p>He pensado un número entre 1 y 100. ¿Podés adivinarlo?</p>
+                    <div class="numero-juego" id="numero-secreto">???</div>
+                    <input type="number" id="adivinanza-input" class="juego-input" placeholder="Ingresa un número">
+                    <br>
+                    <button class="btn" onclick="adivinarNumero()">🔍 Adivinar</button>
+                    <button class="btn" onclick="reiniciarJuego()">🔄 Nuevo Juego</button>
+                    <div class="mensaje-juego" id="mensaje-juego"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables para el juego
+        let numeroSecreto = Math.floor(Math.random() * 100) + 1;
+        let intentos = 0;
+
+        // Función para mostrar secciones
+        function mostrarSeccion(seccionId) {
+            const secciones = document.querySelectorAll('.seccion');
+            secciones.forEach(seccion => {
+                seccion.classList.remove('active');
+            });
+            const seccionActiva = document.getElementById(seccionId);
+            seccionActiva.classList.add('active');
+        }
+
+        // OBTENER CLIMA
+        async function obtenerClima() {
+            try {
+                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&current=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=America/Argentina/Buenos_Aires');
+                const data = await response.json();
+                
+                document.getElementById('temp').innerHTML = `${data.current.temperature_2m}°C`;
+                document.getElementById('humedad').innerHTML = `${data.current.relative_humidity_2m}%`;
+                document.getElementById('viento').innerHTML = `${data.current.wind_speed_10m} km/h`;
+                
+                let climaDesc = "🌞 Despejado";
+                if (data.current.temperature_2m > 30) climaDesc = "🔥 Muy caluroso";
+                else if (data.current.temperature_2m > 20) climaDesc = "🌤️ Agradable";
+                else if (data.current.temperature_2m > 10) climaDesc = "☁️ Fresco";
+                else climaDesc = "❄️ Frío";
+                
+                document.getElementById('clima-desc').innerHTML = climaDesc;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('temp').innerHTML = "Error";
+            }
+        }
+
+        // OBTENER DÓLAR
+        async function obtenerDolar() {
+            try {
+                const response = await fetch('https://dolarapi.com/v1/dolares/blue');
+                const data = await response.json();
+                
+                document.getElementById('dolar-compra').innerHTML = `$${data.compra}`;
+                document.getElementById('dolar-venta').innerHTML = `$${data.venta}`;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('dolar-compra').innerHTML = "Error";
+                document.getElementById('dolar-venta').innerHTML = "Error";
+            }
+        }
+
+        // ÍNDICES simulados
+        function obtenerIndices() {
+            const sp500 = (Math.random() * 300 + 4700).toFixed(2);
+            const nasdaq = (Math.random() * 500 + 14500).toFixed(2);
+            const dowjones = (Math.random() * 400 + 36000).toFixed(2);
+            
+            document.getElementById('sp500').innerHTML = `${sp500} pts`;
+            document.getElementById('nasdaq').innerHTML = `${nasdaq} pts`;
+            document.getElementById('dowjones').innerHTML = `${dowjones} pts`;
+        }
+
+        // JUEGO
+        function adivinarNumero() {
+            const input = document.getElementById('adivinanza-input');
+            const mensaje = document.getElementById('mensaje-juego');
+            const numeroUsuario = parseInt(input.value);
+            
+            if (isNaN(numeroUsuario) || numeroUsuario < 1 || numeroUsuario > 100) {
+                mensaje.innerHTML = "❌ Ingresá un número entre 1 y 100";
+                mensaje.style.color = "red";
+                return;
+            }
+            
+            intentos++;
+            
+            if (numeroUsuario === numeroSecreto) {
+                mensaje.innerHTML = `🎉 ¡FELICITACIONES! Adivinaste en ${intentos} intentos 🎉`;
+                mensaje.style.color = "green";
+                document.getElementById('numero-secreto').innerHTML = numeroSecreto;
+            } else if (numeroUsuario < numeroSecreto) {
+                mensaje.innerHTML = `📈 El número es MAYOR que ${numeroUsuario}. Intento #${intentos}`;
+                mensaje.style.color = "orange";
+            } else {
+                mensaje.innerHTML = `📉 El número es MENOR que ${numeroUsuario}. Intento #${intentos}`;
+                mensaje.style.color = "orange";
+            }
+            
+            input.value = '';
+            input.focus();
+        }
+        
+        function reiniciarJuego() {
+            numeroSecreto = Math.floor(Math.random() * 100) + 1;
+            intentos = 0;
+            document.getElementById('mensaje-juego').innerHTML = "🎮 ¡Juego reiniciado! Adiviná el nuevo número";
+            document.getElementById('mensaje-juego').style.color = "#667eea";
+            document.getElementById('adivinanza-input').value = '';
+            document.getElementById('numero-secreto').innerHTML = "???";
+        }
+
+        // CARGAR TUS FOTOS REALES
+        function cargarMisFotos() {
+            // Tus fotos de viaje
+            const fotosViaje = [
+                { archivo: "motoplaya.jpg", descripcion: "🏍️ Mi moto en la playa" },
+                { archivo: "motochuy.jpg", descripcion: "🌄 Aventura en la ruta" }
+            ];
+            
+            const galeriaViajes = document.getElementById('galeria-viajes');
+            fotosViaje.forEach(foto => {
+                const fotoDiv = document.createElement('div');
+                fotoDiv.className = 'foto-card';
+                fotoDiv.innerHTML = `
+                    <img src="${foto.archivo}" alt="${foto.descripcion}">
+                    <p>${foto.descripcion}</p>
+                `;
+                galeriaViajes.appendChild(fotoDiv);
+            });
+            
+            // Tus fotos de Milu (tu gata)
+            const fotosGata = [
+                { archivo: "milu.jpg", descripcion: "😺 Milu - Mi gata hermosa" },
+                { archivo: "milubb.jpg", descripcion: "🐱 Milu durmiendo" }
+            ];
+            
+            const galeriaGata = document.getElementById('galeria-gata');
+            fotosGata.forEach(foto => {
+                const fotoDiv = document.createElement('div');
+                fotoDiv.className = 'foto-card';
+                fotoDiv.innerHTML = `
+                    <img src="${foto.archivo}" alt="${foto.descripcion}">
+                    <p>${foto.descripcion}</p>
+                `;
+                galeriaGata.appendChild(fotoDiv);
+            });
+        }
+
+        // Actualizar datos cada 30 segundos
+        function actualizarTodo() {
+            obtenerClima();
+            obtenerDolar();
+            obtenerIndices();
+        }
+        
+        // INICIALIZAR
+        window.onload = () => {
+            cargarMisFotos();
+            actualizarTodo();
+            setInterval(actualizarTodo, 30000);
+        };
+    </script>
+</body>
+</html>
