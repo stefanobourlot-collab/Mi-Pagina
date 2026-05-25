@@ -61,7 +61,9 @@ Una página web completa con **clima **, **cotización del dólar blue**, **gale
 - ✅ **WebView** (WhatsApp, Instagram) con mensaje de apertura en navegador
 
 
-- 
+- 🔗 Enlaces
+
+- [Ver página principal] https://stefanobourlot-collab.github.io/Mi-Pagina/
 
 ## 📂 Estructura del proyecto
 
