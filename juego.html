@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>GitHub Cat Runner - Esquiva los Códigos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0f1e 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            flex-direction: column;
+        }
+
+        .aviso-app {
+            display: none;
+            background: #ffcc00;
+            color: #1a1f2e;
+            text-align: center;
+            padding: 15px;
+            font-family: monospace;
+            font-weight: bold;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            max-width: 90%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .aviso-app button {
+            background: #0a0f1e;
+            color: #ffcc00;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .game-container {
+            background: #0f1420;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid #2d3348;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 12px;
+            cursor: pointer;
+            background: linear-gradient(180deg, #1a2035 0%, #0f1420 100%);
+            max-width: 100%;
+            height: auto;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .score-box {
+            background: #2d3348;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+        }
+
+        .score-label {
+            color: #8b8fab;
+            font-size: 14px;
+        }
+
+        .score-value {
+            color: #f0f0f0;
+            font-size: 28px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .best-score {
+            background: #2d3348;
+            padding: 8px 20px;
+            border-radius: 30px;
+        }
+
+        .best-label {
+            color: #8b8fab;
+            font-size: 14px;
+        }
+
+        .best-value {
+            color: #ffd93d;
+            font-size: 28px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .controls {
+            background: #2d3348;
+            padding: 8px 20px;
+            border-radius: 30px;
+            color: #8b8fab;
+            font-size: 14px;
+        }
+
+        .controls span {
+            color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .restart-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 25px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .restart-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #8b8fab;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link a:hover {
+            color: #667eea;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 10px;
+            }
+            .score-value, .best-value {
+                font-size: 22px;
+            }
+            .score-box, .best-score, .controls {
+                padding: 5px 12px;
+            }
+            .restart-btn {
+                padding: 6px 18px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="aviso-app" id="avisoApp">
+    ⚠️ <strong>Estás dentro de una app</strong> (WhatsApp, Instagram, etc.)<br>
+    El juego funciona mejor si lo abrís en <strong>Chrome</strong> o el navegador de tu celular.
+    <br>
+    <button id="abrirEnChromeBtn">🌐 ABRIR EN CHROME</button>
+</div>
+
+<div class="game-container">
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    
+    <div class="game-info">
+        <div class="score-box">
+            <span class="score-label">🏆 PUNTOS</span>
+            <span class="score-value" id="score">0</span>
+        </div>
+        <div class="best-score">
+            <span class="best-label">⭐ RÉCORD</span>
+            <span class="best-value" id="bestScore">0</span>
+        </div>
+        <div class="controls">
+            📱 Toca la pantalla o presiona <span>ESPACIO</span> / <span>↑</span>
+        </div>
+        <button class="restart-btn" onclick="reiniciarJuego()">🔄 REINICIAR</button>
+    </div>
+    <div class="back-link">
+        <a href="index.html">← Volver a mi página principal</a>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // DETECCIÓN DE WEBVIEW (app)
+        function esWebView() {
+            const ua = navigator.userAgent.toLowerCase();
+            return (
+                ua.includes('wv') ||
+                (ua.includes('android') && !ua.includes('chrome')) ||
+                ua.includes('instagram') ||
+                ua.includes('facebook') ||
+                ua.includes('fbav') ||
+                ua.includes('discord') ||
+                ua.includes('whatsapp')
+            );
+        }
+
+        const aviso = document.getElementById('avisoApp');
+        if (esWebView()) {
+            aviso.style.display = 'block';
+        }
+
+        const btnChrome = document.getElementById('abrirEnChromeBtn');
+        if (btnChrome) {
+            btnChrome.addEventListener('click', function() {
+                const url = window.location.href;
+                window.location.href = 'intent://' + window.location.host + window.location.pathname + '#Intent;scheme=https;package=com.android.chrome;end';
+                setTimeout(function() {
+                    window.location.href = url;
+                }, 1000);
+            });
+        }
+
+        // ============================================
+        // JUEGO
+        // ============================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const ANCHO = 800;
+        const ALTO = 400;
+        canvas.width = ANCHO;
+        canvas.height = ALTO;
+        
+        let gameRunning = true;
+        let score = 0;
+        let bestScore = localStorage.getItem('githubCatBest') || 0;
+        let frameCounter = 0;
+        let spawnCounter = 0;
+        let velocidad = 5;
+        
+        document.getElementById('bestScore').innerText = bestScore;
+        
+        let gravedad = 0.8;
+        let fuerzaSalto = -12;
+        let enSuelo = true;
+        
+        const cat = {
+            x: 80,
+            y: ALTO - 80,
+            ancho: 45,
+            alto: 45,
+            velY: 0,
+            color: "#f5f5f5",
+            ojos: "#1a1f2e",
+            nariz: "#f97316"
+        };
+        
+        let obstaculos = [];
+        
+        const tiposObstaculo = [
+            { simbolo: "</>", color: "#ef4444", nombre: "HTML Malo" },
+            { simbolo: "🐛", color: "#f59e0b", nombre: "Bug" },
+            { simbolo: "💀", color: "#6b7280", nombre: "Dead Code" },
+            { simbolo: "⚠️", color: "#eab308", nombre: "Warning" },
+            { simbolo: "🔒", color: "#3b82f6", nombre: "Virus" },
+            { simbolo: "💣", color: "#dc2626", nombre: "Exploit" }
+        ];
+        
+        const sueloY = ALTO - 45;
+        
+        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.moveTo(x+r, y);
+            this.lineTo(x+w-r, y);
+            this.quadraticCurveTo(x+w, y, x+w, y+r);
+            this.lineTo(x+w, y+h-r);
+            this.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+            this.lineTo(x+r, y+h);
+            this.quadraticCurveTo(x, y+h, x, y+h-r);
+            this.lineTo(x, y+r);
+            this.quadraticCurveTo(x, y, x+r, y);
+            return this;
+        };
+        
+        function dibujarOctocat() {
+            const catY = cat.y;
+            ctx.fillStyle = cat.color;
+            ctx.beginPath();
+            ctx.ellipse(cat.x + cat.ancho/2, catY + cat.alto/2, cat.ancho/2, cat.alto/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = "#f5f5f5";
+            ctx.beginPath();
+            ctx.moveTo(cat.x + 8, catY + 8);
+            ctx.lineTo(cat.x + 20, catY + 2);
+            ctx.lineTo(cat.x + 28, catY + 10);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(cat.x + cat.ancho - 8, catY + 8);
+            ctx.lineTo(cat.x + cat.ancho - 20, catY + 2);
+            ctx.lineTo(cat.x + cat.ancho - 28, catY + 10);
+            ctx.fill();
+            
+            ctx.fillStyle = "#e0e0e0";
+            ctx.beginPath();
+            ctx.moveTo(cat.x + 12, catY + 10);
+            ctx.lineTo(cat.x + 20, catY + 5);
+            ctx.lineTo(cat.x + 26, catY + 12);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(cat.x + cat.ancho - 12, catY + 10);
+            ctx.lineTo(cat.x + cat.ancho - 20, catY + 5);
+            ctx.lineTo(cat.x + cat.ancho - 26, catY + 12);
+            ctx.fill();
+            
+            ctx.fillStyle = cat.ojos;
+            ctx.beginPath();
+            ctx.arc(cat.x + 15, catY + 22, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(cat.x + cat.ancho - 15, catY + 22, 7, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(cat.x + 12, catY + 19, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(cat.x + cat.ancho - 18, catY + 19, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = cat.nariz;
+            ctx.beginPath();
+            ctx.arc(cat.x + cat.ancho/2, catY + 28, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.strokeStyle = "#4a4a6a";
+            ctx.lineWidth = 1.5;
+            ctx.moveTo(cat.x + 8, catY + 28);
+            ctx.lineTo(cat.x - 5, catY + 25);
+            ctx.stroke();
+            ctx.moveTo(cat.x + 8, catY + 32);
+            ctx.lineTo(cat.x - 5, catY + 33);
+            ctx.stroke();
+            ctx.moveTo(cat.x + cat.ancho - 8, catY + 28);
+            ctx.lineTo(cat.x + cat.ancho + 5, catY + 25);
+            ctx.stroke();
+            ctx.moveTo(cat.x + cat.ancho - 8, catY + 32);
+            ctx.lineTo(cat.x + cat.ancho + 5, catY + 33);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(cat.x - 12, catY + cat.alto - 15);
+            ctx.quadraticCurveTo(cat.x - 25, catY + cat.alto - 5, cat.x - 18, catY + cat.alto - 25);
+            ctx.strokeStyle = "#f5f5f5";
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            
+            if (!enSuelo) {
+                ctx.fillStyle = "#f5f5f5";
+                ctx.fillRect(cat.x + 5, catY + cat.alto - 8, 10, 12);
+                ctx.fillRect(cat.x + cat.ancho - 15, catY + cat.alto - 8, 10, 12);
+            }
+        }
+        
+        function dibujarObstaculo(obs) {
+            ctx.save();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.fillStyle = obs.color;
+            ctx.beginPath();
+            ctx.roundRect(obs.x, obs.y, obs.ancho, obs.alto, 8);
+            ctx.fill();
+            ctx.font = `${obs.alto - 10}px "Segoe UI Emoji", "Apple Color Emoji", monospace`;
+            ctx.fillStyle = "white";
+            ctx.shadowBlur = 0;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(obs.simbolo, obs.x + obs.ancho/2, obs.y + obs.alto/2);
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(obs.x, obs.y, obs.ancho, obs.alto, 8);
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        function dibujarFondo() {
+            ctx.font = '14px "Courier New", monospace';
+            ctx.fillStyle = 'rgba(255,255,255,0.04)';
+            
+            for (let i = 0; i < 15; i++) {
+                ctx.fillText('</>', (frameCounter * 0.5 + i * 55) % ANCHO, ALTO - 25);
+                ctx.fillText('{}', (frameCounter * 0.3 + i * 70 + 30) % ANCHO, ALTO - 65);
+                ctx.fillText('()', (frameCounter * 0.8 + i * 80 + 15) % ANCHO, ALTO - 100);
+                ctx.fillText('const', (frameCounter * 0.4 + i * 90 + 45) % ANCHO, ALTO - 140);
+                ctx.fillText('=>', (frameCounter * 0.6 + i * 65 + 60) % ANCHO, ALTO - 175);
+            }
+            
+            ctx.font = 'bold 42px "Courier New", "Segoe UI", monospace';
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.12)';
+            ctx.textAlign = 'center';
+            ctx.fillText('STEFANO BOURLOT', ANCHO / 2, ALTO / 2);
+            
+            ctx.font = '18px monospace';
+            ctx.fillStyle = 'rgba(255,255,255,0.05)';
+            ctx.fillText('stefanobourlot', ANCHO / 2, ALTO - 25);
+            
+            ctx.textAlign = 'left';
+        }
+        
+        function dibujarSuelo() {
+            ctx.fillStyle = "#2d3348";
+            ctx.fillRect(0, sueloY + 35, ANCHO, 10);
+            ctx.strokeStyle = "#4a4f6a";
+            ctx.lineWidth = 2;
+            for (let i = 0; i < ANCHO; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(i, sueloY + 40);
+                ctx.lineTo(i + 20, sueloY + 40);
+                ctx.stroke();
+            }
+        }
+        
+        function actualizarGato() {
+            cat.velY += gravedad;
+            cat.y += cat.velY;
+            if (cat.y >= sueloY) {
+                cat.y = sueloY;
+                cat.velY = 0;
+                enSuelo = true;
+            } else {
+                enSuelo = false;
+            }
+            if (cat.y < 0) {
+                cat.y = 0;
+                if (cat.velY < 0) cat.velY = 0;
+            }
+        }
+        
+        function saltar() {
+            if (enSuelo && gameRunning) {
+                cat.velY = fuerzaSalto;
+                enSuelo = false;
+            }
+        }
+        
+        function generarObstaculo() {
+            const tipo = tiposObstaculo[Math.floor(Math.random() * tiposObstaculo.length)];
+            obstaculos.push({
+                x: ANCHO,
+                y: sueloY + 5,
+                ancho: 40,
+                alto: 40,
+                simbolo: tipo.simbolo,
+                color: tipo.color
+            });
+        }
+        
+        function actualizarObstaculos() {
+            for (let i = 0; i < obstaculos.length; i++) {
+                obstaculos[i].x -= velocidad;
+                if (cat.x < obstaculos[i].x + obstaculos[i].ancho &&
+                    cat.x + cat.ancho > obstaculos[i].x &&
+                    cat.y < obstaculos[i].y + obstaculos[i].alto &&
+                    cat.y + cat.alto > obstaculos[i].y) {
+                    gameRunning = false;
+                }
+            }
+            obstaculos = obstaculos.filter(obs => obs.x + obs.ancho > 0);
+        }
+        
+        function actualizarPuntaje() {
+            if (gameRunning) {
+                score++;
+                document.getElementById('score').innerText = Math.floor(score / 10);
+                if (score % 200 === 0 && velocidad < 12) {
+                    velocidad += 0.5;
+                }
+            }
+        }
+        
+        window.reiniciarJuego = function() {
+            gameRunning = true;
+            score = 0;
+            velocidad = 5;
+            obstaculos = [];
+            cat.y = sueloY;
+            cat.velY = 0;
+            enSuelo = true;
+            frameCounter = 0;
+            spawnCounter = 0;
+            document.getElementById('score').innerText = "0";
+        };
+        
+        function dibujarGameOver() {
+            ctx.fillStyle = "rgba(0,0,0,0.85)";
+            ctx.fillRect(0, 0, ANCHO, ALTO);
+            
+            ctx.font = "bold 32px 'Courier New', monospace";
+            ctx.fillStyle = "#ef4444";
+            ctx.textAlign = "center";
+            ctx.fillText("GAME OVER", ANCHO/2, ALTO/2 - 60);
+            
+            const puntajeFinal = Math.floor(score / 10);
+            
+            ctx.font = "24px monospace";
+            ctx.fillStyle = "#f0f0f0";
+            ctx.fillText(`Tu puntaje: ${puntajeFinal}`, ANCHO/2, ALTO/2 - 15);
+            
+            ctx.font = "18px monospace";
+            ctx.fillStyle = "#8b8fab";
+            ctx.fillText("Tocá la pantalla o presioná ESPACIO para reiniciar", ANCHO/2, ALTO/2 + 40);
+            
+            ctx.font = "16px monospace";
+            ctx.fillStyle = "#667eea";
+            ctx.fillText("⭐ PRESIONÁ 'G' para guardar tu récord ⭐", ANCHO/2, ALTO/2 + 90);
+            
+            if (puntajeFinal > bestScore) {
+                bestScore = puntajeFinal;
+                localStorage.setItem('githubCatBest', bestScore);
+                document.getElementById('bestScore').innerText = bestScore;
+            }
+        }
+        
+        function guardarPuntajeEnAPI() {
+            const puntajeFinal = Math.floor(score / 10);
+            if (puntajeFinal > 0) {
+                const nombre = prompt("🏆 ¡NUEVO RÉCORD! 🏆\nIngresá tu nombre (máx 15 caracteres):", "Stefano");
+                if (nombre && nombre.trim()) {
+                    const nombreLimpio = nombre.substring(0, 15);
+                    alert(`✅ Puntaje ${puntajeFinal} guardado para ${nombreLimpio}!`);
+                }
+            } else {
+                alert("No hay puntaje para guardar. ¡Jugá primero!");
+            }
+        }
+        
+        function manejarReinicio() {
+            if (!gameRunning) {
+                reiniciarJuego();
+            } else {
+                saltar();
+            }
+        }
+        
+        function gameLoop() {
+            ctx.clearRect(0, 0, ANCHO, ALTO);
+            dibujarFondo();
+            if (gameRunning) {
+                actualizarGato();
+                actualizarObstaculos();
+                actualizarPuntaje();
+                spawnCounter++;
+                let intervaloGeneracion = Math.max(40, 70 - Math.floor(velocidad * 2));
+                if (spawnCounter > intervaloGeneracion) {
+                    generarObstaculo();
+                    spawnCounter = 0;
+                }
+                frameCounter++;
+            }
+            dibujarSuelo();
+            for (let obs of obstaculos) dibujarObstaculo(obs);
+            dibujarOctocat();
+            if (!gameRunning) dibujarGameOver();
+            ctx.font = "12px monospace";
+            ctx.fillStyle = "#4a4f6a";
+            ctx.textAlign = "left";
+            ctx.fillText("Esquivá los códigos maliciosos!", 15, 35);
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function handleJump(e) {
+            if (e.type === 'keydown') {
+                if (e.code === 'KeyG') {
+                    e.preventDefault();
+                    if (!gameRunning) {
+                        guardarPuntajeEnAPI();
+                    }
+                    return;
+                }
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!gameRunning) {
+                        manejarReinicio();
+                    } else {
+                        saltar();
+                    }
+                }
+            } else if (e.type === 'click' || e.type === 'touchstart') {
+                e.preventDefault();
+                if (!gameRunning) {
+                    manejarReinicio();
+                } else {
+                    saltar();
+                }
+            }
+        }
+        
+        window.addEventListener('keydown', handleJump);
+        canvas.addEventListener('click', handleJump);
+        canvas.addEventListener('touchstart', handleJump);
+        
+        reiniciarJuego();
+        gameLoop();
+    })();
+</script>
+</body>
+</html>
