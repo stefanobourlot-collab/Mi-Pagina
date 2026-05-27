@@ -65,7 +65,18 @@ Una página web completa con **clima **, **cotización del dólar blue**, **gale
 
 - [Ver página principal] https://stefanobourlot-collab.github.io/Mi-Pagina/
 
-## 📂 Estructura del proyecto
+##  📂 Estructura del Proyecto
+
+```text
+📁 API/
+└── 📄 guardar-puntaje.html
+📄 LÉAME.md
+📄 índice.html
+📄 juego.html
+📄 milu.jpg
+📄 milubb.jpg
+📄 motochuy.jpg
+📄 motoplaya.jpg
 
 
 ## 👨‍💻 Autor
